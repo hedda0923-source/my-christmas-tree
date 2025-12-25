@@ -1,637 +1,1235 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2113.4">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000; -webkit-text-stroke: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000; -webkit-text-stroke: #000000; min-height: 14.0px}
-    span.s1 {font-kerning: none}
-    span.s2 {font: 12.0px 'PingFang SC'; font-kerning: none}
-    span.s3 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
-  </style>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Magical Christmas Tree - Classic Edition</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+
+        :root {
+
+            --pink-glow: #ffdae0;
+
+            --accent-pink: #FF69B4;
+
+            --gold: #D4AF37;
+
+        }
+
+
+
+        body, html {
+
+            margin: 0;
+
+            padding: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            overflow: hidden;
+
+            background: radial-gradient(circle at center, #2b002b 0%, #000000 100%);
+
+            color: white;
+
+            font-family: 'Cinzel', serif;
+
+        }
+
+
+
+        #loading-overlay {
+
+            position: fixed;
+
+            top: 0; left: 0; width: 100%; height: 100%;
+
+            background: black;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            z-index: 1000;
+
+            transition: opacity 1s ease;
+
+        }
+
+
+
+        .spinner {
+
+            width: 50px;
+
+            height: 50px;
+
+            border: 3px solid rgba(255, 105, 180, 0.3);
+
+            border-top-color: var(--accent-pink);
+
+            border-radius: 50%;
+
+            animation: spin 1s linear infinite;
+
+            margin-bottom: 20px;
+
+        }
+
+
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+
+
+        #canvas-container {
+
+            position: absolute;
+
+            top: 0; left: 0; width: 100%; height: 100%;
+
+        }
+
+
+
+        header {
+
+            position: absolute;
+
+            top: 5%;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            text-align: center;
+
+            pointer-events: none;
+
+            z-index: 10;
+
+        }
+
+
+
+        header h1 {
+
+            font-family: 'Great Vibes', cursive;
+
+            font-size: 4rem;
+
+            margin: 0;
+
+            color: var(--pink-glow);
+
+            text-shadow: 0 0 20px rgba(255, 182, 193, 0.8), 0 0 40px rgba(255, 105, 180, 0.4);
+
+        }
+
+
+
+        /* Camera Feed */
+
+        #camera-container {
+
+            position: absolute;
+
+            bottom: 20px;
+
+            left: 20px;
+
+            width: 200px;
+
+            aspect-ratio: 4/3;
+
+            border: 2px solid var(--accent-pink);
+
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            background: rgba(0, 0, 0, 0.5);
+
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+
+            z-index: 20;
+
+        }
+
+
+
+        #video-feed {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            transform: scaleX(-1);
+
+        }
+
+
+
+        /* Sidebar UI */
+
+        #gesture-sidebar {
+
+            position: absolute;
+
+            top: 50%;
+
+            right: 20px;
+
+            transform: translateY(-50%);
+
+            background: rgba(0, 0, 0, 0.6);
+
+            backdrop-filter: blur(10px);
+
+            padding: 20px;
+
+            border-radius: 15px;
+
+            border: 1px solid rgba(255, 255, 255, 0.1);
+
+            z-index: 20;
+
+            width: 180px;
+
+        }
+
+
+
+        /* Photo Manager Sidebar */
+
+        #photo-manager {
+
+            position: absolute;
+
+            top: 50%;
+
+            left: 20px;
+
+            transform: translateY(-50%);
+
+            background: rgba(0, 0, 0, 0.6);
+
+            backdrop-filter: blur(10px);
+
+            padding: 15px;
+
+            border-radius: 15px;
+
+            border: 1px solid rgba(255, 255, 255, 0.1);
+
+            z-index: 20;
+
+            width: 120px;
+
+            max-height: 60vh;
+
+            overflow-y: auto;
+
+            display: none;
+
+        }
+
+
+
+        #photo-manager h3 {
+
+            font-size: 0.8rem;
+
+            text-align: center;
+
+            margin-top: 0;
+
+            color: var(--gold);
+
+        }
+
+
+
+        .photo-thumb-container {
+
+            position: relative;
+
+            margin-bottom: 10px;
+
+            width: 100%;
+
+            aspect-ratio: 1;
+
+            border-radius: 8px;
+
+            overflow: hidden;
+
+            border: 1px solid rgba(255,255,255,0.2);
+
+        }
+
+
+
+        .photo-thumb {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+        }
+
+
+
+        .delete-btn {
+
+            position: absolute;
+
+            top: 2px;
+
+            right: 2px;
+
+            background: rgba(255, 0, 0, 0.7);
+
+            color: white;
+
+            border: none;
+
+            border-radius: 50%;
+
+            width: 20px;
+
+            height: 20px;
+
+            font-size: 12px;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+
+
+        .gesture-item {
+
+            margin-bottom: 15px;
+
+            opacity: 0.5;
+
+            transition: all 0.3s ease;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            text-align: center;
+
+        }
+
+
+
+        .gesture-item.active {
+
+            opacity: 1;
+
+            transform: scale(1.1);
+
+            color: var(--accent-pink);
+
+            text-shadow: 0 0 10px var(--accent-pink);
+
+        }
+
+
+
+        .gesture-icon { font-size: 1.5rem; margin-bottom: 5px; }
+
+        .gesture-label { font-size: 0.8rem; font-weight: bold; }
+
+
+
+        /* Controls */
+
+        #controls {
+
+            position: absolute;
+
+            bottom: 30px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 20px;
+
+            z-index: 30;
+
+        }
+
+
+
+        .btn {
+
+            background: rgba(255, 255, 255, 0.15);
+
+            backdrop-filter: blur(5px);
+
+            border: 1px solid rgba(255, 255, 255, 0.3);
+
+            color: white;
+
+            cursor: pointer;
+
+            transition: all 0.2s;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-family: 'Cinzel', serif;
+
+        }
+
+
+
+        .btn:hover {
+
+            background: var(--accent-pink);
+
+            border-color: white;
+
+        }
+
+
+
+        #upload-btn {
+
+            padding: 10px 25px;
+
+            border-radius: 30px;
+
+            font-size: 0.9rem;
+
+            gap: 10px;
+
+        }
+
+
+
+        #music-btn {
+
+            width: 50px;
+
+            height: 50px;
+
+            border-radius: 50%;
+
+            font-size: 1.2rem;
+
+        }
+
+
+
+        input[type="file"] { display: none; }
+
+    </style>
+
 </head>
+
 <body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html lang="zh-CN"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;Magical Christmas Tree - Classic Edition&lt;/title&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Cinzel:wght@400;700&amp;display=swap" rel="stylesheet"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>:root {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>--pink-glow: #ffdae0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>--accent-pink: #FF69B4;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>--gold: #D4AF37;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>body, html {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin: 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow: hidden;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: radial-gradient(circle at center, #2b002b 0%, #000000 100%);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-family: 'Cinzel', serif;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#loading-overlay {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: fixed;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>top: 0; left: 0; width: 100%; height: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: black;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex-direction: column;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>justify-content: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>z-index: 1000;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transition: opacity 1s ease;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.spinner {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 50px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 50px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 3px solid rgba(255, 105, 180, 0.3);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-top-color: var(--accent-pink);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>animation: spin 1s linear infinite;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>@keyframes spin { to { transform: rotate(360deg); } }</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#canvas-container {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>top: 0; left: 0; width: 100%; height: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>header {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>top: 5%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>left: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transform: translateX(-50%);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>pointer-events: none;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>z-index: 10;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>header h1 {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-family: 'Great Vibes', cursive;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 4rem;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin: 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: var(--pink-glow);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>text-shadow: 0 0 20px rgba(255, 182, 193, 0.8), 0 0 40px rgba(255, 105, 180, 0.4);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>/* Camera Feed */</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#camera-container {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>bottom: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>left: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 200px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>aspect-ratio: 4/3;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 2px solid var(--accent-pink);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow: hidden;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: rgba(0, 0, 0, 0.5);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>z-index: 20;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#video-feed {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>object-fit: cover;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transform: scaleX(-1);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>/* Sidebar UI */</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#gesture-sidebar {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>top: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>right: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transform: translateY(-50%);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: rgba(0, 0, 0, 0.6);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(10px);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 15px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 1px solid rgba(255, 255, 255, 0.1);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>z-index: 20;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 180px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>/* Photo Manager Sidebar */</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#photo-manager {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>top: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>left: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transform: translateY(-50%);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: rgba(0, 0, 0, 0.6);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(10px);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 15px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 15px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 1px solid rgba(255, 255, 255, 0.1);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>z-index: 20;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 120px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>max-height: 60vh;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow-y: auto;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: none;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#photo-manager h3 {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 0.8rem;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-top: 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: var(--gold);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.photo-thumb-container {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: relative;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>aspect-ratio: 1;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 8px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow: hidden;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 1px solid rgba(255,255,255,0.2);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.photo-thumb {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>object-fit: cover;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.delete-btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>top: 2px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>right: 2px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: rgba(255, 0, 0, 0.7);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: none;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cursor: pointer;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>justify-content: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.gesture-item {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-bottom: 15px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>opacity: 0.5;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex-direction: column;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.gesture-item.active {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>opacity: 1;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transform: scale(1.1);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: var(--accent-pink);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>text-shadow: 0 0 10px var(--accent-pink);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.gesture-icon { font-size: 1.5rem; margin-bottom: 5px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.gesture-label { font-size: 0.8rem; font-weight: bold; }</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>/* Controls */</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#controls {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>position: absolute;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>bottom: 30px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>left: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transform: translateX(-50%);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>z-index: 30;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.15);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(5px);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 1px solid rgba(255, 255, 255, 0.3);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cursor: pointer;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>transition: all 0.2s;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>justify-content: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-family: 'Cinzel', serif;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.btn:hover {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: var(--accent-pink);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-color: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#upload-btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 10px 25px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 30px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 0.9rem;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 10px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#music-btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 50px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 50px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 50%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 1.2rem;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>input[type="file"] { display: none; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="loading-overlay"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="spinner"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;p&gt;</span><span class="s2">正在载入魔法</span><span class="s1">...&lt;/p&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;header&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;h1&gt;Merry Christmas&lt;/h1&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/header&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="canvas-container"&gt;&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="camera-container"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;video id="video-feed" autoplay playsinline&gt;&lt;/video&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="photo-manager"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;h3&gt;</span><span class="s2">管理照片</span><span class="s1">&lt;/h3&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="photo-list"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="gesture-sidebar"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="gst-fist" class="gesture-item active"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span class="gesture-icon"&gt;</span><span class="s3">✊</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span class="gesture-label"&gt;</span><span class="s2">握拳</span><span class="s1">: </span><span class="s2">聚合树</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="gst-open" class="gesture-item"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span class="gesture-icon"&gt;</span><span class="s3">✋</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span class="gesture-label"&gt;</span><span class="s2">张开</span><span class="s1">: </span><span class="s2">散开</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="gst-pinch" class="gesture-item"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span class="gesture-icon"&gt;</span><span class="s3">👌</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span class="gesture-label"&gt;</span><span class="s2">捏合</span><span class="s1">: </span><span class="s2">聚焦回忆</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="controls"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;label for="file-input" id="upload-btn" class="btn"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;</span><span class="s3">🖼️</span><span class="s1">&lt;/span&gt; </span><span class="s2">上传回忆</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/label&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;input type="file" id="file-input" accept="image/*" multiple&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button id="music-btn" class="btn"&gt;</span><span class="s3">🎵</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script type="importmap"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>"imports": {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>"three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script type="module"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import * as THREE from 'three';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// --- 1. Audio Synthesizer: Original Christmas Jingle Melody ---</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>class ChristmasSynth {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>constructor() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.ctx = null;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.isPlaying = false;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Original energetic jingle melody</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.notes = [</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{ f: 392, d: 0.4 }, { f: 523, d: 0.4 }, { f: 523, d: 0.2 }, { f: 587, d: 0.2 }, { f: 523, d: 0.2 }, { f: 493, d: 0.2 }, { f: 440, d: 0.4 }, { f: 440, d: 0.4 },</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{ f: 440, d: 0.4 }, { f: 587, d: 0.4 }, { f: 587, d: 0.2 }, { f: 659, d: 0.2 }, { f: 587, d: 0.2 }, { f: 523, d: 0.2 }, { f: 493, d: 0.4 }, { f: 392, d: 0.4 },</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{ f: 392, d: 0.4 }, { f: 659, d: 0.4 }, { f: 659, d: 0.2 }, { f: 698, d: 0.2 }, { f: 659, d: 0.2 }, { f: 587, d: 0.2 }, { f: 523, d: 0.4 }, { f: 440, d: 0.4 },</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{ f: 392, d: 0.2 }, { f: 392, d: 0.2 }, { f: 440, d: 0.4 }, { f: 587, d: 0.4 }, { f: 493, d: 0.4 }, { f: 523, d: 0.8 }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.currentNote = 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>init() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>playNext() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!this.isPlaying) return;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const note = this.notes[this.currentNote];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const osc = this.ctx.createOscillator();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const gain = this.ctx.createGain();</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>osc.type = 'triangle';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>osc.frequency.setValueAtTime(note.f, this.ctx.currentTime);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>gain.gain.setValueAtTime(0.08, this.ctx.currentTime);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + note.d);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>osc.connect(gain);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>gain.connect(this.ctx.destination);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>osc.start();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>osc.stop(this.ctx.currentTime + note.d);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.currentNote = (this.currentNote + 1) % this.notes.length;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.timeout = setTimeout(() =&gt; this.playNext(), note.d * 1000);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>toggle() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.init();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.isPlaying = !this.isPlaying;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (this.isPlaying) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (this.ctx.state === 'suspended') this.ctx.resume();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.playNext();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>clearTimeout(this.timeout);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return this.isPlaying;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const synth = new ChristmasSynth();</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// --- 2. MediaPipe Hand Tracking ---</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let handLandmarker;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let video = document.getElementById('video-feed');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let currentGesture = 'fist';</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>async function initMediaPipe() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>try {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const filesetResolver = await vision.FilesetResolver.forVisionTasks(</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>handLandmarker = await vision.HandLandmarker.createFromOptions(filesetResolver, {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>baseOptions: {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>delegate: "GPU"</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>},</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>runningMode: "VIDEO",</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>numHands: 1</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const stream = await navigator.mediaDevices.getUserMedia({<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>video: { width: 640, height: 480 }<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>video.srcObject = stream;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>video.onloadeddata = () =&gt; predictWebcam();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} catch (error) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.error("MediaPipe Init Error:", error);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let lastVideoTime = -1;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function predictWebcam() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (handLandmarker &amp;&amp; video.currentTime !== lastVideoTime) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>lastVideoTime = video.currentTime;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const results = handLandmarker.detectForVideo(video, performance.now());</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (results.landmarks &amp;&amp; results.landmarks.length &gt; 0) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>processGesture(results.landmarks[0]);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>updateGestureUI('fist');<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>requestAnimationFrame(predictWebcam);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function processGesture(landmarks) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const thumbTip = landmarks[4];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const indexTip = landmarks[8];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const wrist = landmarks[0];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const dPinch = Math.hypot(thumbTip.x - indexTip.x, thumbTip.y - indexTip.y);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const isExtended = (tip) =&gt; Math.hypot(tip.x - wrist.x, tip.y - wrist.y) &gt; 0.35;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (dPinch &lt; 0.045) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>updateGestureUI('pinch');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} else if (isExtended(landmarks[8]) &amp;&amp; isExtended(landmarks[12]) &amp;&amp; isExtended(landmarks[16])) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>updateGestureUI('open');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} else {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>updateGestureUI('fist');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function updateGestureUI(g) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (currentGesture === g) return;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>currentGesture = g;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>document.querySelectorAll('.gesture-item').forEach(el =&gt; el.classList.remove('active'));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const activeEl = document.getElementById(`gst-${g}`);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (activeEl) activeEl.classList.add('active');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// --- 3. Three.js Scene Setup ---</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let scene, camera, renderer, composer;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let particles = [], phantomTree, snowflakes;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let photos = [];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let clock = new THREE.Clock();</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const PARTICLE_COUNT = 1000;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const TREE_HEIGHT = 10;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const TREE_RADIUS = 5;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function initThree() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>scene = new THREE.Scene();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>camera.position.z = 15;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>renderer = new THREE.WebGLRenderer({<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>antialias: true,<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>alpha: true,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>powerPreference: "high-performance"</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>renderer.setSize(window.innerWidth, window.innerHeight);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>document.getElementById('canvas-container').appendChild(renderer.domElement);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const renderScene = new RenderPass(scene, camera);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const bloomPass = new UnrealBloomPass(</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>new THREE.Vector2(window.innerWidth, window.innerHeight),<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>0.8, 0.3, 0.9</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>composer = new EffectComposer(renderer);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>composer.addPass(renderScene);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>composer.addPass(bloomPass);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>composer.addPass(new OutputPass());</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>createParticles();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>createSnow();</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>window.addEventListener('resize', onWindowResize);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const loader = document.getElementById('loading-overlay');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (loader) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>loader.style.opacity = '0';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setTimeout(() =&gt; loader.remove(), 1000);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}, 1000);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>animate();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function createParticles() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const geo = new THREE.SphereGeometry(0.08, 6, 6);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const matGold = new THREE.MeshStandardMaterial({ color: 0xD4AF37, emissive: 0xD4AF37, emissiveIntensity: 2 });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const matPink = new THREE.MeshStandardMaterial({ color: 0xFF69B4, emissive: 0xFF69B4, emissiveIntensity: 2 });</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; PARTICLE_COUNT; i++) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const mesh = new THREE.Mesh(geo, i % 2 === 0 ? matGold : matPink);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const ratio = i / PARTICLE_COUNT;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const angle = ratio * Math.PI * 24;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const radius = (1 - ratio) * TREE_RADIUS;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const x = Math.cos(angle) * radius;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const y = ratio * TREE_HEIGHT - TREE_HEIGHT / 2;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const z = Math.sin(angle) * radius;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>mesh.userData.treePos = new THREE.Vector3(x, y, z);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>mesh.userData.randPos = new THREE.Vector3((Math.random()-0.5)*40, (Math.random()-0.5)*30, (Math.random()-0.5)*20);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>mesh.position.copy(mesh.userData.treePos);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>scene.add(mesh);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>particles.push(mesh);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const phantomGeo = new THREE.SphereGeometry(0.04, 4, 4);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const phantomMat = new THREE.MeshBasicMaterial({ color: 0xFF69B4, transparent: true, opacity: 0.25 });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>phantomTree = new THREE.InstancedMesh(phantomGeo, phantomMat, 800);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const dummy = new THREE.Object3D();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>for(let i=0; i&lt;800; i++) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const r = i/800;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>dummy.position.set(Math.cos(r*60)*(1-r)*4.3, r*10.5-5.25, Math.sin(r*60)*(1-r)*4.3);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>dummy.updateMatrix();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>phantomTree.setMatrixAt(i, dummy.matrix);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>scene.add(phantomTree);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function createSnow() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const snowGeo = new THREE.BufferGeometry();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const snowCount = 1500;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const pos = new Float32Array(snowCount * 3);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>for(let i=0; i&lt;snowCount*3; i++) pos[i] = (Math.random()-0.5) * 50;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>snowGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const snowMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.6 });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>snowflakes = new THREE.Points(snowGeo, snowMat);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>scene.add(snowflakes);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function deletePhoto(id, mesh) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>scene.remove(mesh);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>photos = photos.filter(p =&gt; p.uuid !== mesh.uuid);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const element = document.getElementById(`thumb-${id}`);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (element) element.remove();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (photos.length === 0) document.getElementById('photo-manager').style.display = 'none';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.getElementById('file-input').addEventListener('change', (e) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const files = e.target.files;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (files.length &gt; 0) document.getElementById('photo-manager').style.display = 'block';</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>for (let file of files) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const url = URL.createObjectURL(file);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const id = Math.random().toString(36).substr(2, 9);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const photoList = document.getElementById('photo-list');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const container = document.createElement('div');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>container.className = 'photo-thumb-container';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>container.id = `thumb-${id}`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>container.innerHTML = `&lt;img src="${url}" class="photo-thumb"&gt;&lt;button class="delete-btn"&gt;×&lt;/button&gt;`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>photoList.appendChild(container);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const loader = new THREE.TextureLoader();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>loader.load(url, (tex) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const aspect = tex.image.width / tex.image.height;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const geo = new THREE.PlaneGeometry(1.3 * aspect, 1.3);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const mesh = new THREE.Mesh(geo, mat);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>mesh.userData.treePos = new THREE.Vector3((Math.random()-0.5)*4.5, (Math.random()-0.5)*8, (Math.random()-0.5)*4.5);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>mesh.userData.randPos = new THREE.Vector3((Math.random()-0.5)*28, (Math.random()-0.5)*20, (Math.random()-0.5)*15);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>mesh.position.copy(mesh.userData.treePos);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>scene.add(mesh);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>photos.push(mesh);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>container.querySelector('.delete-btn').addEventListener('click', () =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>deletePhoto(id, mesh);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>URL.revokeObjectURL(url);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function animate() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>requestAnimationFrame(animate);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const time = clock.getElapsedTime();</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const snowPos = snowflakes.geometry.attributes.position.array;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>for(let i=1; i&lt;snowPos.length; i+=3) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>snowPos[i] -= 0.05;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if(snowPos[i] &lt; -25) snowPos[i] = 25;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>snowflakes.geometry.attributes.position.needsUpdate = true;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>particles.forEach(p =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const target = (currentGesture === 'fist' || currentGesture === 'pinch') ? p.userData.treePos : p.userData.randPos;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>p.position.lerp(target, 0.07);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let focusedPhoto = null;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if(currentGesture === 'pinch' &amp;&amp; photos.length &gt; 0) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let minDist = Infinity;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>photos.forEach(p =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const screenPos = p.position.clone().project(camera);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const dist = Math.hypot(screenPos.x, screenPos.y);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if(dist &lt; minDist) { minDist = dist; focusedPhoto = p; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>photos.forEach(p =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if(p === focusedPhoto) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const targetPos = camera.position.clone().add(camDir.multiplyScalar(6.5));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>p.position.lerp(targetPos, 0.15);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>p.lookAt(camera.position);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const target = currentGesture === 'open' ? p.userData.randPos : p.userData.treePos;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>p.position.lerp(target, 0.06);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>p.lookAt(p.position.clone().add(new THREE.Vector3(0,0,1)));<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>phantomTree.rotation.y += 0.007;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>composer.render();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function onWindowResize() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>camera.aspect = window.innerWidth / window.innerHeight;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>camera.updateProjectionMatrix();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>renderer.setSize(window.innerWidth, window.innerHeight);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>composer.setSize(window.innerWidth, window.innerHeight);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.getElementById('music-btn').addEventListener('click', (e) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const active = synth.toggle();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>e.target.innerText = active ? '</span><span class="s3">⏸️</span><span class="s1">' : '</span><span class="s3">🎵</span><span class="s1">';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>initThree();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>initMediaPipe();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+
+
+
+    <div id="loading-overlay">
+
+        <div class="spinner"></div>
+
+        <p>正在载入魔法...</p>
+
+    </div>
+
+
+
+    <header>
+
+        <h1>Merry Christmas</h1>
+
+    </header>
+
+
+
+    <div id="canvas-container"></div>
+
+
+
+    <div id="camera-container">
+
+        <video id="video-feed" autoplay playsinline></video>
+
+    </div>
+
+
+
+    <div id="photo-manager">
+
+        <h3>管理照片</h3>
+
+        <div id="photo-list"></div>
+
+    </div>
+
+
+
+    <div id="gesture-sidebar">
+
+        <div id="gst-fist" class="gesture-item active">
+
+            <span class="gesture-icon">✊</span>
+
+            <span class="gesture-label">握拳: 聚合树</span>
+
+        </div>
+
+        <div id="gst-open" class="gesture-item">
+
+            <span class="gesture-icon">✋</span>
+
+            <span class="gesture-label">张开: 散开</span>
+
+        </div>
+
+        <div id="gst-pinch" class="gesture-item">
+
+            <span class="gesture-icon">👌</span>
+
+            <span class="gesture-label">捏合: 聚焦回忆</span>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="controls">
+
+        <label for="file-input" id="upload-btn" class="btn">
+
+            <span>🖼️</span> 上传回忆
+
+        </label>
+
+        <input type="file" id="file-input" accept="image/*" multiple>
+
+        
+
+        <button id="music-btn" class="btn">🎵</button>
+
+    </div>
+
+
+
+    <script type="importmap">
+
+    {
+
+        "imports": {
+
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+
+        }
+
+    }
+
+    </script>
+
+
+
+    <script type="module">
+
+        import * as THREE from 'three';
+
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+
+
+        // --- 1. Audio Synthesizer: Original Christmas Jingle Melody ---
+
+        class ChristmasSynth {
+
+            constructor() {
+
+                this.ctx = null;
+
+                this.isPlaying = false;
+
+                // Original energetic jingle melody
+
+                this.notes = [
+
+                    { f: 392, d: 0.4 }, { f: 523, d: 0.4 }, { f: 523, d: 0.2 }, { f: 587, d: 0.2 }, { f: 523, d: 0.2 }, { f: 493, d: 0.2 }, { f: 440, d: 0.4 }, { f: 440, d: 0.4 },
+
+                    { f: 440, d: 0.4 }, { f: 587, d: 0.4 }, { f: 587, d: 0.2 }, { f: 659, d: 0.2 }, { f: 587, d: 0.2 }, { f: 523, d: 0.2 }, { f: 493, d: 0.4 }, { f: 392, d: 0.4 },
+
+                    { f: 392, d: 0.4 }, { f: 659, d: 0.4 }, { f: 659, d: 0.2 }, { f: 698, d: 0.2 }, { f: 659, d: 0.2 }, { f: 587, d: 0.2 }, { f: 523, d: 0.4 }, { f: 440, d: 0.4 },
+
+                    { f: 392, d: 0.2 }, { f: 392, d: 0.2 }, { f: 440, d: 0.4 }, { f: 587, d: 0.4 }, { f: 493, d: 0.4 }, { f: 523, d: 0.8 }
+
+                ];
+
+                this.currentNote = 0;
+
+            }
+
+
+
+            init() {
+
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+            }
+
+
+
+            playNext() {
+
+                if (!this.isPlaying) return;
+
+                const note = this.notes[this.currentNote];
+
+                const osc = this.ctx.createOscillator();
+
+                const gain = this.ctx.createGain();
+
+
+
+                osc.type = 'triangle';
+
+                osc.frequency.setValueAtTime(note.f, this.ctx.currentTime);
+
+                
+
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + note.d);
+
+
+
+                osc.connect(gain);
+
+                gain.connect(this.ctx.destination);
+
+
+
+                osc.start();
+
+                osc.stop(this.ctx.currentTime + note.d);
+
+
+
+                this.currentNote = (this.currentNote + 1) % this.notes.length;
+
+                this.timeout = setTimeout(() => this.playNext(), note.d * 1000);
+
+            }
+
+
+
+            toggle() {
+
+                this.init();
+
+                this.isPlaying = !this.isPlaying;
+
+                if (this.isPlaying) {
+
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+                    this.playNext();
+
+                } else {
+
+                    clearTimeout(this.timeout);
+
+                }
+
+                return this.isPlaying;
+
+            }
+
+        }
+
+
+
+        const synth = new ChristmasSynth();
+
+
+
+        // --- 2. MediaPipe Hand Tracking ---
+
+        let handLandmarker;
+
+        let video = document.getElementById('video-feed');
+
+        let currentGesture = 'fist';
+
+
+
+        async function initMediaPipe() {
+
+            try {
+
+                const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3');
+
+                const filesetResolver = await vision.FilesetResolver.forVisionTasks(
+
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+
+                );
+
+                
+
+                handLandmarker = await vision.HandLandmarker.createFromOptions(filesetResolver, {
+
+                    baseOptions: {
+
+                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+
+                        delegate: "GPU"
+
+                    },
+
+                    runningMode: "VIDEO",
+
+                    numHands: 1
+
+                });
+
+
+
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+
+                    video: { width: 640, height: 480 } 
+
+                });
+
+                video.srcObject = stream;
+
+                video.onloadeddata = () => predictWebcam();
+
+            } catch (error) {
+
+                console.error("MediaPipe Init Error:", error);
+
+            }
+
+        }
+
+
+
+        let lastVideoTime = -1;
+
+        function predictWebcam() {
+
+            if (handLandmarker && video.currentTime !== lastVideoTime) {
+
+                lastVideoTime = video.currentTime;
+
+                const results = handLandmarker.detectForVideo(video, performance.now());
+
+                if (results.landmarks && results.landmarks.length > 0) {
+
+                    processGesture(results.landmarks[0]);
+
+                } else {
+
+                    updateGestureUI('fist'); 
+
+                }
+
+            }
+
+            requestAnimationFrame(predictWebcam);
+
+        }
+
+
+
+        function processGesture(landmarks) {
+
+            const thumbTip = landmarks[4];
+
+            const indexTip = landmarks[8];
+
+            const wrist = landmarks[0];
+
+            const dPinch = Math.hypot(thumbTip.x - indexTip.x, thumbTip.y - indexTip.y);
+
+            const isExtended = (tip) => Math.hypot(tip.x - wrist.x, tip.y - wrist.y) > 0.35;
+
+
+
+            if (dPinch < 0.045) {
+
+                updateGestureUI('pinch');
+
+            } else if (isExtended(landmarks[8]) && isExtended(landmarks[12]) && isExtended(landmarks[16])) {
+
+                updateGestureUI('open');
+
+            } else {
+
+                updateGestureUI('fist');
+
+            }
+
+        }
+
+
+
+        function updateGestureUI(g) {
+
+            if (currentGesture === g) return;
+
+            currentGesture = g;
+
+            document.querySelectorAll('.gesture-item').forEach(el => el.classList.remove('active'));
+
+            const activeEl = document.getElementById(`gst-${g}`);
+
+            if (activeEl) activeEl.classList.add('active');
+
+        }
+
+
+
+        // --- 3. Three.js Scene Setup ---
+
+        let scene, camera, renderer, composer;
+
+        let particles = [], phantomTree, snowflakes;
+
+        let photos = [];
+
+        let clock = new THREE.Clock();
+
+
+
+        const PARTICLE_COUNT = 1000;
+
+        const TREE_HEIGHT = 10;
+
+        const TREE_RADIUS = 5;
+
+
+
+        function initThree() {
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            camera.position.z = 15;
+
+
+
+            renderer = new THREE.WebGLRenderer({ 
+
+                antialias: true, 
+
+                alpha: true,
+
+                powerPreference: "high-performance"
+
+            });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+
+
+            const renderScene = new RenderPass(scene, camera);
+
+            const bloomPass = new UnrealBloomPass(
+
+                new THREE.Vector2(window.innerWidth, window.innerHeight), 
+
+                0.8, 0.3, 0.9
+
+            );
+
+            
+
+            composer = new EffectComposer(renderer);
+
+            composer.addPass(renderScene);
+
+            composer.addPass(bloomPass);
+
+            composer.addPass(new OutputPass());
+
+
+
+            createParticles();
+
+            createSnow();
+
+            
+
+            window.addEventListener('resize', onWindowResize);
+
+            
+
+            setTimeout(() => {
+
+                const loader = document.getElementById('loading-overlay');
+
+                if (loader) {
+
+                    loader.style.opacity = '0';
+
+                    setTimeout(() => loader.remove(), 1000);
+
+                }
+
+            }, 1000);
+
+            
+
+            animate();
+
+        }
+
+
+
+        function createParticles() {
+
+            const geo = new THREE.SphereGeometry(0.08, 6, 6);
+
+            const matGold = new THREE.MeshStandardMaterial({ color: 0xD4AF37, emissive: 0xD4AF37, emissiveIntensity: 2 });
+
+            const matPink = new THREE.MeshStandardMaterial({ color: 0xFF69B4, emissive: 0xFF69B4, emissiveIntensity: 2 });
+
+
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+
+                const mesh = new THREE.Mesh(geo, i % 2 === 0 ? matGold : matPink);
+
+                const ratio = i / PARTICLE_COUNT;
+
+                const angle = ratio * Math.PI * 24;
+
+                const radius = (1 - ratio) * TREE_RADIUS;
+
+                const x = Math.cos(angle) * radius;
+
+                const y = ratio * TREE_HEIGHT - TREE_HEIGHT / 2;
+
+                const z = Math.sin(angle) * radius;
+
+
+
+                mesh.userData.treePos = new THREE.Vector3(x, y, z);
+
+                mesh.userData.randPos = new THREE.Vector3((Math.random()-0.5)*40, (Math.random()-0.5)*30, (Math.random()-0.5)*20);
+
+                mesh.position.copy(mesh.userData.treePos);
+
+                scene.add(mesh);
+
+                particles.push(mesh);
+
+            }
+
+
+
+            const phantomGeo = new THREE.SphereGeometry(0.04, 4, 4);
+
+            const phantomMat = new THREE.MeshBasicMaterial({ color: 0xFF69B4, transparent: true, opacity: 0.25 });
+
+            phantomTree = new THREE.InstancedMesh(phantomGeo, phantomMat, 800);
+
+            const dummy = new THREE.Object3D();
+
+            for(let i=0; i<800; i++) {
+
+                const r = i/800;
+
+                dummy.position.set(Math.cos(r*60)*(1-r)*4.3, r*10.5-5.25, Math.sin(r*60)*(1-r)*4.3);
+
+                dummy.updateMatrix();
+
+                phantomTree.setMatrixAt(i, dummy.matrix);
+
+            }
+
+            scene.add(phantomTree);
+
+        }
+
+
+
+        function createSnow() {
+
+            const snowGeo = new THREE.BufferGeometry();
+
+            const snowCount = 1500;
+
+            const pos = new Float32Array(snowCount * 3);
+
+            for(let i=0; i<snowCount*3; i++) pos[i] = (Math.random()-0.5) * 50;
+
+            snowGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+            const snowMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.6 });
+
+            snowflakes = new THREE.Points(snowGeo, snowMat);
+
+            scene.add(snowflakes);
+
+        }
+
+
+
+        function deletePhoto(id, mesh) {
+
+            scene.remove(mesh);
+
+            photos = photos.filter(p => p.uuid !== mesh.uuid);
+
+            const element = document.getElementById(`thumb-${id}`);
+
+            if (element) element.remove();
+
+            if (photos.length === 0) document.getElementById('photo-manager').style.display = 'none';
+
+        }
+
+
+
+        document.getElementById('file-input').addEventListener('change', (e) => {
+
+            const files = e.target.files;
+
+            if (files.length > 0) document.getElementById('photo-manager').style.display = 'block';
+
+
+
+            for (let file of files) {
+
+                const url = URL.createObjectURL(file);
+
+                const id = Math.random().toString(36).substr(2, 9);
+
+                const photoList = document.getElementById('photo-list');
+
+                const container = document.createElement('div');
+
+                container.className = 'photo-thumb-container';
+
+                container.id = `thumb-${id}`;
+
+                container.innerHTML = `<img src="${url}" class="photo-thumb"><button class="delete-btn">×</button>`;
+
+                photoList.appendChild(container);
+
+
+
+                const loader = new THREE.TextureLoader();
+
+                loader.load(url, (tex) => {
+
+                    const aspect = tex.image.width / tex.image.height;
+
+                    const geo = new THREE.PlaneGeometry(1.3 * aspect, 1.3);
+
+                    const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true });
+
+                    const mesh = new THREE.Mesh(geo, mat);
+
+                    mesh.userData.treePos = new THREE.Vector3((Math.random()-0.5)*4.5, (Math.random()-0.5)*8, (Math.random()-0.5)*4.5);
+
+                    mesh.userData.randPos = new THREE.Vector3((Math.random()-0.5)*28, (Math.random()-0.5)*20, (Math.random()-0.5)*15);
+
+                    mesh.position.copy(mesh.userData.treePos);
+
+                    scene.add(mesh);
+
+                    photos.push(mesh);
+
+                    container.querySelector('.delete-btn').addEventListener('click', () => {
+
+                        deletePhoto(id, mesh);
+
+                        URL.revokeObjectURL(url);
+
+                    });
+
+                });
+
+            }
+
+        });
+
+
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            const time = clock.getElapsedTime();
+
+
+
+            const snowPos = snowflakes.geometry.attributes.position.array;
+
+            for(let i=1; i<snowPos.length; i+=3) {
+
+                snowPos[i] -= 0.05;
+
+                if(snowPos[i] < -25) snowPos[i] = 25;
+
+            }
+
+            snowflakes.geometry.attributes.position.needsUpdate = true;
+
+
+
+            particles.forEach(p => {
+
+                const target = (currentGesture === 'fist' || currentGesture === 'pinch') ? p.userData.treePos : p.userData.randPos;
+
+                p.position.lerp(target, 0.07);
+
+            });
+
+
+
+            let focusedPhoto = null;
+
+            if(currentGesture === 'pinch' && photos.length > 0) {
+
+                let minDist = Infinity;
+
+                photos.forEach(p => {
+
+                    const screenPos = p.position.clone().project(camera);
+
+                    const dist = Math.hypot(screenPos.x, screenPos.y);
+
+                    if(dist < minDist) { minDist = dist; focusedPhoto = p; }
+
+                });
+
+            }
+
+
+
+            photos.forEach(p => {
+
+                if(p === focusedPhoto) {
+
+                    const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+
+                    const targetPos = camera.position.clone().add(camDir.multiplyScalar(6.5));
+
+                    p.position.lerp(targetPos, 0.15);
+
+                    p.lookAt(camera.position);
+
+                } else {
+
+                    const target = currentGesture === 'open' ? p.userData.randPos : p.userData.treePos;
+
+                    p.position.lerp(target, 0.06);
+
+                    p.lookAt(p.position.clone().add(new THREE.Vector3(0,0,1))); 
+
+                }
+
+            });
+
+
+
+            phantomTree.rotation.y += 0.007;
+
+            composer.render();
+
+        }
+
+
+
+        function onWindowResize() {
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            composer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+
+
+        document.getElementById('music-btn').addEventListener('click', (e) => {
+
+            const active = synth.toggle();
+
+            e.target.innerText = active ? '⏸️' : '🎵';
+
+        });
+
+
+
+        initThree();
+
+        initMediaPipe();
+
+    </script>
+
 </body>
+
 </html>
